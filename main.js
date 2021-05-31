@@ -1,7 +1,7 @@
-document.body.innerHTML+='<h1 id="header" class="text-center mt-5">The Monty Hall Problem</h1><h6 class="text-center mb-5">Original copy and simulator by Zachary Bright, <a href="https://github.com/zbbright">GitHub</a> || <a href="https://zbbright.github.io/portfolio">Portfolio</a></h6>';
-document.body.innerHTML+='<div id="description"><p class="m-4">You are on a game show.  The shows host, Monty Hall, presents you with three doors.  He explains that behind one of the doors is a brand new car. Behind each of the other two doors is a goat.<br>You may pick any of the three doors.  After you choose, Monty will inspect the two remaining doors, and then open one of them to reveal a goat.  He will then give you the choice to either stick with your original choice, or switch to the unopened door.</p><h3 class="text-center">The objective</h3><p class="m-4">While the objective of the game show contestant is to win a new car, the objective for you, as an inquisitive mind, is to use logic and reasoning to determine the best strategy for the contestant.  Are your odds best if you stay or switch, or does it make a difference?  <br><b>Determine the strategy ("stay", or "switch") that gives the contestant higher statistical odds of selecting the car on their second choice, or confirm that there is no statistical difference between the strategies.</b><br>The best way to excercise your mind is to work out the problem in your head or on paper using math, but heres a simulator for the impatient:</p><h2 id="subheader" class="text-center mt-5">Probability Simulator</h2></div>';
+document.body.innerHTML+=`<h1 id="header" class="text-center text-dark mt-5">The Monty Hall Problem</h1><h6 class="text-center text-secondary mb-5">Original copy and simulator by Zachary Bright, <a href="https://github.com/zbbright">GitHub</a> || <a href="https://zbbright.github.io/portfolio">Portfolio</a></h6>`;
+document.body.innerHTML+=`<div id="description"><p class="m-4">You are on a game show.  The shows host, Monty Hall, presents you with three doors.  He explains that behind one of the doors is a brand new car. Behind each of the other two doors is a goat.<br>You may pick any of the three doors.  After you choose, Monty will inspect the two remaining doors, and then open one of them to reveal a goat.  He will then give you the choice to either stick with your original choice, or switch to the unopened door.</p><h3 class="text-dark text-center mt-5">The Objective</h3><p class="m-4">While the objective of the game show contestant is to win a new car, the objective for you, as an inquisitive mind, is to use logic and reasoning to determine the best strategy for the contestant.  Are your odds best if you stay or switch, or does it make a difference?  <br><b>Determine the strategy ("stay", or "switch") that gives the contestant higher statistical odds of selecting the car on their second choice, or confirm that there is no statistical difference between the strategies.</b><br>The best way to excercise your mind is to work out the problem in your head or on paper using math, but here's a simulator for the impatient. Keep in mind that you'll need at least 20 trials to get very meaningful stats.</p><h2 id="subheader" class="text-center text-dark mt-5">Probability Simulator</h2></div>`;
 document.body.innerHTML+=`<div class="container-fluid" id="simulator"></div>`;
-document.body.innerHTML+='<div class="container-fluid px-5"><h2 class="text-center mt-3">Stats</h2><h6 class="text-center">-<br>Stay: <span id="stay"></span><br>Switch: <span id="switch"></span><br>Total: <span id="total"></span><br>-</h6></div><h6>Check out my other projects on <a href="https://github.com/zbbright">GitHub,</a> or take a look at my <a href="https://zbbright.github.io/portfolio">portfolio</a>!</h6>';
+document.body.innerHTML+=`<div id="stats" class="container px-5"></div><h6 class="mt-5 p-1 bg-dark text-light text-center">Check out my other projects on <a href="https://github.com/zbbright">GitHub,</a> or take a look at my <a href="https://zbbright.github.io/portfolio">portfolio</a>!</h6>`;
 
 let blue = 'btn-primary';
 let yellow = 'btn-warning';
@@ -18,9 +18,16 @@ let door2text = 'Door 2';
 let door3text = 'Door 3';
 let promptText = 'Pick a door!';
 
+let stay = "";
+let change = "";
+let total = "";
+
 function simulatorRender(){
     document.querySelector('#simulator').innerHTML = (`
-        <div class="container d-flex mx-auto my-3 justify-content-around"><button id="door-1" class="flex-fill btn ${door1color} mx-2 py-4 shadow border-white">${door1text}</button><button id="door-2" class="flex-fill btn ${door2color}  mx-2 shadow border-white">${door2text}</button><button id="door-3" class="flex-fill btn ${door3color} mx-2 shadow border-white">${door3text}</button></div><div id="prompt-box" class="container d-flex justify-content-center"><h6 class="bg-secondary text-white text-center my-3 p-3 border border-warning rounded">${promptText}</h6></div>
+        <div class="container d-flex mx-auto my-3 justify-content-around"><button id="door-1" class="flex-fill btn ${door1color} mx-2 py-4 shadow border-white">${door1text}</button><button id="door-2" class="flex-fill btn ${door2color}  mx-2 shadow border-white">${door2text}</button><button id="door-3" class="flex-fill btn ${door3color} mx-2 shadow border-white">${door3text}</button></div><div id="prompt-box" class="container d-flex justify-content-center"><h6 class="bg-secondary text-white text-center shadow my-3 p-3 border border-warning rounded">${promptText}</h6></div>
+    `)
+    document.querySelector('#stats').innerHTML = (`
+    <h2 class="text-center text-dark my-3">Stats</h2><h5 class="text-center border rounded shadow p-3 mb-5">Stay: ${stay}<br>Switch: ${change}<br>Total: ${total}</h5>
     `)
     document.querySelector('#door-1').addEventListener("click", function () {
         if(!choice1){
@@ -74,10 +81,6 @@ let stays = 0;
 let switches = 0;
 let stayWins = 0;
 let switchWins = 0;
-
-let stay = document.querySelector('#stay');
-let change = document.querySelector('#switch');
-let total = document.querySelector('#total');
 
 function random(){
     let random = Math.floor(Math.random()*3+1);
@@ -189,14 +192,15 @@ function stats(){
     if (choice1==choice2){
         stays+=1;
         win ? (stayWins+=1, win = false) : win = false;
-        stay.innerHTML = Math.floor((stayWins/stays)*100)+'% of '+stays;
+        stay = Math.floor((stayWins/stays)*100)+'% of '+stays;
     } else {
         switches+=1;
         win ? (switchWins+=1, win = false) : win = false;
-        change.innerHTML = Math.floor((switchWins/switches)*100)+'% of '+switches;
+        change = Math.floor((switchWins/switches)*100)+'% of '+switches;
     }
-    total.innerHTML = `${Math.floor(((stayWins+switchWins)/(stays+switches))*100)}% of ${stays+switches}<br>Stay/Switch: ${Math.floor((stays/(stays+switches))*100)}/${Math.floor((switches/(switches+stays))*100)}`;
+    total = `${Math.floor(((stayWins+switchWins)/(stays+switches))*100)}% of ${stays+switches}<br>Stay/Switch: ${Math.floor((stays/(stays+switches))*100)}/${Math.floor((switches/(switches+stays))*100)}`;
     reset();
+    simulatorRender();
 }
 
 function play(){
