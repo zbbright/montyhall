@@ -9,70 +9,42 @@ let turq = 'btn-info';
 let red = 'btn-danger';
 let green = 'btn-success';
 
-let door1color = blue;
-let door2color = blue;
-let door3color = blue;
-
-let door1text = 'Door 1';
-let door2text = 'Door 2';
-let door3text = 'Door 3';
-let promptText = 'Pick a door!';
+let promptText;
 
 let stay = "";
 let change = "";
 let total = "";
 
-function simulatorRender(){
-    document.querySelector('#simulator').innerHTML = (`
-        <div class="container d-flex mx-auto my-3 justify-content-around"><button id="door-1" class="flex-fill btn ${door1color} mx-2 py-4 shadow border-white">${door1text}</button><button id="door-2" class="flex-fill btn ${door2color}  mx-2 shadow border-white">${door2text}</button><button id="door-3" class="flex-fill btn ${door3color} mx-2 shadow border-white">${door3text}</button></div><div id="prompt-box" class="container d-flex justify-content-center"><h6 class="bg-secondary text-white text-center shadow my-3 p-3 border border-warning rounded">${promptText}</h6></div>
-    `)
-    document.querySelector('#stats').innerHTML = (`
-    <h2 class="text-center text-dark my-3">Stats</h2><h5 class="text-center border rounded shadow p-3 mb-5">Stay: ${stay}<br>Switch: ${change}<br>Total: ${total}</h5>
-    `)
-    document.querySelector('#door-1').addEventListener("click", function () {
-        if(!choice1){
-            choice1 = doors[0];
-            door1text = "First choice";
-            door1color = turq;
-            setTimeout(() => revealer(), 500) 
-        } else {
-            choice2 = doors[0];
-            finalSelection();
-        }
+function select(target){
+    if(!choice1){
+        choice1 = target;
+        target.text = "First choice";
+        target.color = turq;
+        setTimeout(() => revealer(), 500);
         play()
-    });
-    document.querySelector('#door-2').addEventListener('click', function(){
-        if(!choice1){
-            choice1 = doors[1];
-            door2text = "First choice";
-            door2color = turq;
-            setTimeout(() => revealer(), 500)
-        } else {
-            choice2 = doors[1];
-            finalSelection();
-        }
+    } else if(reveal&&(target!==reveal)){
+        choice2 = target;
+        finalSelection();
         play()
-    });
-    document.querySelector('#door-3').addEventListener('click', function(){
-        if(!choice1){
-            choice1 = doors[2];
-            door3text = "First choice";
-            door3color = turq;
-            setTimeout(() => revealer(), 500)
-        } else {
-            choice2 = doors[2];
-            finalSelection();
-        }
-        play()
-    });
+    }
 }
 
-simulatorRender();
+class Door {
+    constructor(name, value, text, color){
+        this.name = name;
+        this.value = value;
+        this.text = text;
+        this.color = color;
+    }
+}
 
-let door = [];
-let doors = ['door 1','door 2','door 3'];
-let unopened = [];
+let door1 = new Door("door 1", "", "Door 1", blue)
+let door2 = new Door("door 2", "", "Door 2", blue)
+let door3 = new Door("door 3", "", "Door 3", blue)
+
+let unpicked = [];
 let reveal;
+let remaining;
 let choice1;
 let choice2;
 let win = false;
@@ -84,16 +56,18 @@ let switchWins = 0;
 
 function random(){
     let random = Math.floor(Math.random()*3+1);
-    
+    door1.value = "Goat";
+    door2.value = "Goat";
+    door3.value = "Goat";
     switch (random) {
         case 1:
-            door=['car','goat','goat']
+            door1.value = "Car";
             break;
         case 2:
-            door=['goat','car','goat']
+            door2.value = "Car";
             break;
         case 3:
-            door=['goat','goat','car']
+            door3.value = "Car";
             break;
         default:
             break;
@@ -103,87 +77,66 @@ random();
 
 function revealer(){
         switch (choice1) {
-            case "door 1":
-                unopened = [doors[1],doors[2],door[1],door[2]];
+            case door1:
+                unpicked = [door2,door3];
                 break;
-            case "door 2":
-                unopened = [doors[0],doors[2],door[0],door[2]];
+            case door2:
+                unpicked = [door1,door3];
                 break;
-            case "door 3":
-                unopened = [doors[0],doors[1],door[0],door[1]];
+            case door3:
+                unpicked = [door1,door2];
                 break;
             default:
                 break;
         }
 
-        let chance = Math.floor(Math.random()+2);
+        let chance = Math.round(Math.random());
 
-        if(unopened[chance]==="goat"){
-            reveal = unopened[chance-2]
+        if(unpicked[chance].value==="Goat"){
+            reveal = unpicked[chance];
+            (!chance)?(remaining=unpicked[1]):(remaining=unpicked[0])
         } else {
             switch (chance) {
-                case 2:
-                    reveal = unopened[1];
+                case 0:
+                    reveal = unpicked[1];
+                    remaining = unpicked[0];
                     break;
-                case 3:
-                    reveal = unopened[0];
+                case 1:
+                    reveal = unpicked[0];
+                    remaining = unpicked[1];
                     break;
-            
                 default:
                     break;
             }
         }
 
-        switch (reveal) {
-            case "door 1":
-                door1text = "Goat!";
-                door1color = yellow;
-                (choice1=="door 2") ? (door2text="Stay",door3text="Switch") : (door3text="Stay",door2text="Switch");
-                break;
-            case "door 2":
-                door2text = "Goat!";
-                door2color = yellow;
-                (choice1=="door 1") ? (door1text="Stay",door3text="Switch") : (door3text="Stay",door1text="Switch");
-                break;
-            case "door 3":
-                door3text = "Goat!";
-                door3color = yellow;
-                (choice1=="door 1") ? (door1text="Stay",door2text="Switch") : (door2text="Stay",door1text="Switch");
-                break;
-            default:
-                break;
-        }
+        reveal.text = "Goat!";
+        reveal.color = yellow;
+        choice1.text="Stay";
+        remaining.text="Switch";
         simulatorRender();
 }
 
 function finalSelection(){
-    switch (choice2) {
-        case "door 1":
-            (door[0]==="car") ? (promptText="YOU FOUND THE CAR!!! You won!", win = true, door1color = green, door1text = "Car") : (promptText="You got a goat. Try again!", door1color = red, door1text = "Goat");
-                break;
-        case "door 2":
-            (door[1]==="car") ? (promptText="YOU FOUND THE CAR!!! You won!", win = true, door2color = green, door2text = "Car") : (promptText="You got a goat. Try again!", door2color = red, door2text = "Goat");
-                break;
-        case "door 3":
-            (door[2]==="car") ? (promptText="YOU FOUND THE CAR!!! You won!", win = true, door3color = green, door3text = "Car") : (promptText="You got a goat. Try again!", door3color = red, door3text = "Goat");
-                break;
-        default:
-                break;
-    }
+    (choice2.value==="Car") ? (promptText="YOU FOUND THE CAR!!! You won!", win = true, choice2.color = green) : (promptText="You got a goat. Try again!", choice2.color = red);
+    door1.text=String(door1.value);
+    door2.text=String(door2.value);
+    door3.text=String(door3.value);
 }
 
 function reset(){
-    door1text = "Door 1";
-    door2text = "Door 2";
-    door3text = "Door 3";
-    door1color = blue;
-    door2color = blue;
-    door3color = blue;
+    door1.text = "Door 1";
+    door2.text = "Door 2";
+    door3.text = "Door 3";
+    door1.color = blue;
+    door2.color = blue;
+    door3.color = blue;
     random();
-    unopened = [];
+    unpicked = [];
     choice1 = "";
     choice2 = "";
     reveal = "";
+    remaining = "";
     simulatorRender();
     play();
 }
@@ -207,11 +160,27 @@ function play(){
     if(!choice1){
         promptText="Pick a door!"
     } else if (!choice2){
-        promptText=`You picked ${choice1}. A goat has been revealed from the remaining options. <b>Stay</b>, or <b>switch?</b>`
+        promptText=`You picked ${choice1.name}. A goat has been revealed from the remaining options. <b>Stay</b>, or <b>switch?</b>`
     } else if (choice1&&choice2){
         setTimeout(() => stats(), 1500)
     }
     simulatorRender();
 };
 
+function simulatorRender(){
+    document.querySelector('#simulator').innerHTML = (`<div class="container d-flex mx-auto my-3 justify-content-around"><button id="door-1" class="flex-fill btn ${door1.color} mx-2 py-4 shadow border-white">${door1.text}</button><button id="door-2" class="flex-fill btn ${door2.color}  mx-2 shadow border-white">${door2.text}</button><button id="door-3" class="flex-fill btn ${door3.color} mx-2 shadow border-white">${door3.text}</button></div><div id="prompt-box" class="container d-flex flex-column justify-content-center"><h6 class="bg-secondary text-white text-center shadow my-3 p-3 border border-warning rounded">${promptText}</h6></div>`)
+    document.querySelector('#stats').innerHTML = (`<h2 class="text-center text-dark my-3">Stats</h2><h5 class="text-center border rounded shadow p-3 mb-5">Stay: ${stay}<br>Switch: ${change}<br>Total: ${total}</h5>`)
+    
+    document.querySelector('#door-1').addEventListener("click", function () {
+        select(door1);
+    });
+    document.querySelector('#door-2').addEventListener('click', function(){
+        select(door2);
+    });
+    document.querySelector('#door-3').addEventListener('click', function(){
+        select(door3);
+    });
+}
+
+simulatorRender();
 play();
